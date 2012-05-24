@@ -954,7 +954,7 @@
             The data table storage for the loaded Data Object, Me.Load() required
             </summary>
         </member>
-        <member name="M:DataObjects_Framework.Base.ClsBase_List.Setup(System.String,System.String,DataObjects_Framework.Objects.ClsQueryCondition)">
+        <member name="M:DataObjects_Framework.Base.ClsBase_List.Setup(System.String,System.String,System.Collections.Generic.List{System.String},DataObjects_Framework.Objects.ClsQueryCondition)">
             <summary>
             Sets the data object definition, 
             must be set preferably in the constructor of the derived object
@@ -965,6 +965,9 @@
             <param name="ViewName">
             View Name of the data object 
             this will be used Me.Load() if supplied
+            </param>
+            <param name="CustomKeys">
+            Custom Key definition
             </param>
             <param name="Qc_LoadCondition">
             Additional conditions when fetching the data object

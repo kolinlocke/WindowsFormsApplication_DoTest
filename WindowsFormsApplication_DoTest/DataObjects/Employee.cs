@@ -10,6 +10,8 @@ namespace WindowsFormsApplication_DoTest.DataObjects
 {
     public class Employee : Entity
     {
+        Employee_Salary mObj_ES;
+
         public Employee(Object User = null)
         {
             this.Setup(
@@ -18,14 +20,19 @@ namespace WindowsFormsApplication_DoTest.DataObjects
                 , User
                 , new List<string>() { "ID" });
 
-            this.Add_TableDetail(
-                "Employee_Salary"
-                , ""
-                , ""
-                , new List<string>() { "ID" }
-                , new List<Do_Constants.Str_ForeignKeyRelation>() 
-                    { new Do_Constants.Str_ForeignKeyRelation() 
-                        { Parent_Key = "ID", Child_Key = "ID_Employee" } });
+            //this.Add_TableDetail(
+            //    "Employee_Salary"
+            //    , ""
+            //    , ""
+            //    , new List<string>() { "ID" }
+            //    , new List<Do_Constants.Str_ForeignKeyRelation>() 
+            //        { new Do_Constants.Str_ForeignKeyRelation() 
+            //            { Parent_Key = "ID", Child_Key = "ID_Employee" } });
+        }
+
+        public override void Load(DataObjects_Framework.Objects.ClsKeys Keys = null)
+        {
+            base.Load(Keys);
         }
 
         public System.Data.DataTable pSalary
