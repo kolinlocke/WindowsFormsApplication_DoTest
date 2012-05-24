@@ -13,7 +13,7 @@ namespace WindowsFormsApplication_DoTest
         [STAThread]
         static void Main()
         {
-            DataObjects_Framework.Common.Do_Globals.gSettings.pConnectionString = @"User ID=sa; Password=Administrator1; Initial Catalog=Ex;Data Source=.\Sql_2k8;";
+            DataObjects_Framework.Common.Do_Globals.gSettings.pConnectionString = @"User ID=sa; Password=Administrator1; Initial Catalog=DoTest;Data Source=.\Sql_2k5;";
             DataObjects_Framework.Common.Do_Globals.gSettings.pUseSoftDelete = false;
             
             Application.EnableVisualStyles();
