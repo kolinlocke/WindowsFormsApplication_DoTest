@@ -10,7 +10,7 @@ namespace WindowsFormsApplication_DoTest.DataObjects
 {
     public class Employee : Entity
     {
-        Employee_Salary mObj_ES;
+        //Employee_Salary mObj_ES;
 
         public Employee(Object User = null)
         {

@@ -199,7 +199,7 @@
             Interface for Data Access Methods
             </summary>
         </member>
-        <member name="M:DataObjects_Framework.DataAccess.Interface_DataAccess.GetQuery(DataObjects_Framework.Connection.Interface_Connection,System.String,System.String,System.String,System.String)">
+        <member name="M:DataObjects_Framework.DataAccess.Interface_DataAccess.GetQuery(DataObjects_Framework.Connection.Interface_Connection,System.String,System.String,System.String,System.String,System.Int64,System.Int32)">
             <summary>
             Fetches a result set from a data source object
             </summary>
@@ -218,9 +218,17 @@
             <param name="Sort">
             Sort expression to use to sort the result set (SQL Order By valid syntax)
             </param>
+            <param name="Top">
+            Limits the number of returned rows in the result set,
+            used in pagination
+            </param>
+            <param name="Page">
+            Selects a section based on the Page and Top values in the result set,
+            used in pagination
+            </param>
             <returns></returns>
         </member>
-        <member name="M:DataObjects_Framework.DataAccess.Interface_DataAccess.GetQuery(System.String,System.String,System.String,System.String)">
+        <member name="M:DataObjects_Framework.DataAccess.Interface_DataAccess.GetQuery(System.String,System.String,System.String,System.String,System.Int64,System.Int32)">
             <summary>
             Fetches a result set from a data source object
             </summary>
@@ -235,6 +243,14 @@
             </param>
             <param name="Sort">
             Sort expression to use to sort the result set (SQL Order By valid syntax)
+            </param>
+            <param name="Top">
+            Limits the number of returned rows in the result set,
+            used in pagination
+            </param>
+            <param name="Page">
+            Selects a section based on the Page and Top values in the result set,
+            used in pagination
             </param>
             <returns></returns>
         </member>
@@ -295,8 +311,16 @@
         </member>
         <member name="M:DataObjects_Framework.DataAccess.Interface_DataAccess.Connect">
             <summary>
-            Connects to the defined datasource
+            Connects to the datasource defined in Do_Globals.gSettings.Datasource
             </summary>
+        </member>
+        <member name="M:DataObjects_Framework.DataAccess.Interface_DataAccess.Connect(System.String)">
+            <summary>
+            Connects to the specified datasource
+            </summary>
+            <param name="ConnectionString">
+            The specified connection definition to the datasource
+            </param>
         </member>
         <member name="M:DataObjects_Framework.DataAccess.Interface_DataAccess.Close">
             <summary>
@@ -384,19 +408,6 @@
             </param>
             <param name="Condition">
             ClsQueryCondition Object to be used in fetching the data
-            </param>
-            <returns></returns>
-        </member>
-        <member name="M:DataObjects_Framework.DataAccess.Interface_DataAccess.List_Empty(DataObjects_Framework.Connection.Interface_Connection,System.String)">
-            <summary>
-            Returns a Empy List based on the supplied source data object Name
-            Used for getting the definition of the data object
-            </summary>
-            <param name="Connection">
-            An open connection object
-            </param>
-            <param name="ObjectName">
-            The source data object name
             </param>
             <returns></returns>
         </member>
@@ -541,6 +552,11 @@
             to be inherited in order to use
             </summary>
         </member>
+        <member name="F:DataObjects_Framework.Base.ClsBase.mObj_Parent">
+            <summary>
+            The Parent Data Object for this instance.
+            </summary>
+        </member>
         <member name="F:DataObjects_Framework.Base.ClsBase.mHeader_TableName">
             <summary>
             The declared TableName of the Data Object
@@ -598,7 +614,7 @@
             Custom Key definition
             </param>
         </member>
-        <member name="M:DataObjects_Framework.Base.ClsBase.Add_TableDetail(System.String,System.String,System.String,System.Collections.Generic.List{System.String},System.Collections.Generic.List{DataObjects_Framework.Common.Do_Constants.Str_ForeignKeyRelation})">
+        <member name="M:DataObjects_Framework.Base.ClsBase.Setup_AddTableDetail(System.String,System.String,System.String,System.Collections.Generic.List{System.String},System.Collections.Generic.List{DataObjects_Framework.Common.Do_Constants.Str_ForeignKeyRelation})">
             <summary>
             Adds a Detail Table
             </summary>
@@ -619,7 +635,7 @@
             Custom Foreign Key definition
             </param>
         </member>
-        <member name="M:DataObjects_Framework.Base.ClsBase.Add_RowDetails(System.String,System.String,System.String,System.Collections.Generic.List{System.String},System.Collections.Generic.List{DataObjects_Framework.Common.Do_Constants.Str_ForeignKeyRelation})">
+        <member name="M:DataObjects_Framework.Base.ClsBase.Setup_AddRowDetails(System.String,System.String,System.String,System.Collections.Generic.List{System.String},System.Collections.Generic.List{DataObjects_Framework.Common.Do_Constants.Str_ForeignKeyRelation})">
             <summary>
             Adds a Row Table, a table detail that is expected to have only one row 
             (one is to one relationship)
@@ -638,6 +654,20 @@
             </param>
             <param name="CustomForeignKeys">
             Custom Foreign Key definition
+            </param>
+        </member>
+        <member name="M:DataObjects_Framework.Base.ClsBase.Setup_AddListDetail(System.String,DataObjects_Framework.Base.ClsBase_List,System.Collections.Generic.List{DataObjects_Framework.Common.Do_Constants.Str_ForeignKeyRelation})">
+            <summary>
+            Adds a List Detail.
+            </summary>
+            <param name="Name">
+            The name of the List Detail.
+            </param>
+            <param name="Obj_List">
+            The ClsBase_List object to be used.
+            </param>
+            <param name="CustomForeignKeys">
+            Custom Foreign Key definition.
             </param>
         </member>
         <member name="M:DataObjects_Framework.Base.ClsBase.List(System.String,System.String)">
@@ -689,26 +719,82 @@
         </member>
         <member name="M:DataObjects_Framework.Base.ClsBase.Load(DataObjects_Framework.Objects.ClsKeys)">
             <summary>
-            (Overridable) Loads the Data Object with the supplied Key,
+            Loads the Data Object with the supplied Key,
             when loading table details, the framework assumes the foreign key field of the table detail is the same the parent table
             if not supplied by an explicit foreign key definition
             </summary>
             <param name="Keys">
-            Key object to use
+            Key object to use, if null, it implies to create a new data object.
+            </param>
+        </member>
+        <member name="M:DataObjects_Framework.Base.ClsBase.Load(DataObjects_Framework.Objects.ClsKeys,DataObjects_Framework.Base.ClsBase)">
+            <summary>
+            Loads the Data Object with the supplied Key,
+            when loading table details, the framework assumes the foreign key field of the table detail is the same the parent table
+            if not supplied by an explicit foreign key definition
+            </summary>
+            <param name="Keys">
+            Key object to use, if null, it implies to create a new data object.
+            </param>
+            <param name="Obj_Parent">
+            The Parent Data Object.
+            </param>
+        </member>
+        <member name="M:DataObjects_Framework.Base.ClsBase.Load(DataObjects_Framework.DataAccess.Interface_DataAccess,DataObjects_Framework.Objects.ClsKeys,DataObjects_Framework.Base.ClsBase)">
+            <summary>
+            Loads the Data Object with the supplied Key,
+            when loading table details, the framework assumes the foreign key field of the table detail is the same the parent table
+            if not supplied by an explicit foreign key definition
+            </summary>
+            <param name="Da">
+            An open DataAccess Object to be used.
+            </param>
+            <param name="Keys">
+            Key object to use, if null, it implies to create a new data object.
+            </param>
+            <param name="Obj_Parent">
+            The Parent Data Object.
+            </param>
+        </member>
+        <member name="M:DataObjects_Framework.Base.ClsBase.Load(System.Data.DataRow)">
+            <summary>
+            Loads the Data Object from an existing data row.
+            </summary>
+            <param name="Dr">
+            Source data row to use
+            </param>
+        </member>
+        <member name="M:DataObjects_Framework.Base.ClsBase.Load_Details(DataObjects_Framework.Objects.ClsKeys)">
+            <summary>
+            Loads the declared details of the data object.
+            </summary>
+            <param name="Keys">
+            Key object to use.
+            </param>
+        </member>
+        <member name="M:DataObjects_Framework.Base.ClsBase.Load_Details(DataObjects_Framework.DataAccess.Interface_DataAccess,DataObjects_Framework.Objects.ClsKeys)">
+            <summary>
+            Loads the declared details of the data object.
+            </summary>
+            <param name="Da">
+            An open DataAccess Object to be used.
+            </param>
+            <param name="Keys">
+            Key object to use.
             </param>
         </member>
         <member name="M:DataObjects_Framework.Base.ClsBase.Save(DataObjects_Framework.DataAccess.Interface_DataAccess)">
             <summary>
-            (Overridable) Saves changes to the Data Object
+            Saves changes to the Data Object
             </summary>
             <param name="Da">
-            Optional, an open Data_Access Objects that is reused from the calling method
+            An open Data_Access Objects that is reused from the calling method
             </param>
             <returns></returns>
         </member>
         <member name="M:DataObjects_Framework.Base.ClsBase.Delete">
             <summary>
-            (Overridable) Deletes the Data Object
+            Deletes the Data Object
             </summary>
         </member>
         <member name="M:DataObjects_Framework.Base.ClsBase.GetKeys">
@@ -808,6 +894,11 @@
             </param>
             <returns></returns>
         </member>
+        <member name="P:DataObjects_Framework.Base.ClsBase.pObj_Parent">
+            <summary>
+            Gets the parent data object of this instance.
+            </summary>
+        </member>
         <member name="P:DataObjects_Framework.Base.ClsBase.pID">
             <summary>
             Get Property, gets the Data Object ID (or primary key)
@@ -847,6 +938,33 @@
             <summary>
             Current DataAccess Object
             </summary>
+        </member>
+        <member name="T:DataObjects_Framework.Base.ClsBaseListObject">
+            <summary>
+            Internal, manages the defined list object
+            </summary>
+        </member>
+        <member name="T:DataObjects_Framework.Base.ClsBaseListObject.Str_Obj">
+            <summary>
+            Struct Str_Obj
+            </summary>
+        </member>
+        <member name="F:DataObjects_Framework.Base.ClsBaseListObject.Str_Obj.Name">
+            <summary>
+            Name of the ClsBase object
+            </summary>
+        </member>
+        <member name="F:DataObjects_Framework.Base.ClsBaseListObject.Str_Obj.Obj">
+            <summary>
+            The ClsBase object
+            </summary>
+        </member>
+        <member name="M:DataObjects_Framework.Base.ClsBaseListObject.Str_Obj.#ctor(System.String,DataObjects_Framework.Base.ClsBase)">
+            <summary>
+            Constructor for Str_Obj
+            </summary>
+            <param name="pName"></param>
+            <param name="pObj"></param>
         </member>
         <member name="T:DataObjects_Framework.Objects.ClsCustomException">
             <summary>
@@ -954,7 +1072,7 @@
             The data table storage for the loaded Data Object, Me.Load() required
             </summary>
         </member>
-        <member name="M:DataObjects_Framework.Base.ClsBase_List.Setup(System.String,System.String,System.Collections.Generic.List{System.String},DataObjects_Framework.Objects.ClsQueryCondition)">
+        <member name="M:DataObjects_Framework.Base.ClsBase_List.Setup(System.String,System.String,DataObjects_Framework.Objects.ClsQueryCondition,System.Collections.Generic.List{System.String})">
             <summary>
             Sets the data object definition, 
             must be set preferably in the constructor of the derived object
@@ -966,12 +1084,44 @@
             View Name of the data object 
             this will be used Me.Load() if supplied
             </param>
+            /// <param name="Qc_LoadCondition">
+            Additional conditions when fetching the data object
+            </param>
             <param name="CustomKeys">
             Custom Key definition
             </param>
-            <param name="Qc_LoadCondition">
-            Additional conditions when fetching the data object
-            </param>
+        </member>
+        <member name="M:DataObjects_Framework.Base.ClsBase_List.Setup_AddTableDetail(System.String,System.String,System.String,System.Collections.Generic.List{System.String},System.Collections.Generic.List{DataObjects_Framework.Common.Do_Constants.Str_ForeignKeyRelation})">
+            <summary>
+            Not Implemented. Don't use.
+            </summary>
+            <param name="TableName"></param>
+            <param name="ViewName"></param>
+            <param name="LoadCondition"></param>
+            <param name="CustomKeys"></param>
+            <param name="CustomForeignKeys"></param>
+        </member>
+        <member name="M:DataObjects_Framework.Base.ClsBase_List.Setup_AddRowDetails(System.String,System.String,System.String,System.Collections.Generic.List{System.String},System.Collections.Generic.List{DataObjects_Framework.Common.Do_Constants.Str_ForeignKeyRelation})">
+            <summary>
+            Not Implemented. Don't use.
+            </summary>
+            <param name="TableName"></param>
+            <param name="ViewName"></param>
+            <param name="LoadCondition"></param>
+            <param name="CustomKeys"></param>
+            <param name="CustomForeignKeys"></param>
+        </member>
+        <member name="M:DataObjects_Framework.Base.ClsBase_List.Setup_AddListObject(System.String,DataObjects_Framework.Base.ClsBase,System.Collections.Generic.List{System.Object},System.String,System.Collections.Generic.List{DataObjects_Framework.Common.Do_Constants.Str_ForeignKeyRelation},System.Collections.Generic.List{DataObjects_Framework.Common.Do_Constants.Str_ForeignKeyRelation},DataObjects_Framework.Objects.ClsQueryCondition)">
+            <summary>
+            Need comments.
+            </summary>
+            <param name="Name"></param>
+            <param name="Template_Obj"></param>
+            <param name="Template_Obj_Constructors"></param>
+            <param name="Template_ViewName"></param>
+            <param name="Template_FetchKeys"></param>
+            <param name="Template_ForeignKeys"></param>
+            <param name="Template_LoadCondition"></param>
         </member>
         <member name="M:DataObjects_Framework.Base.ClsBase_List.List(System.String,System.String)">
             <summary>
@@ -991,36 +1141,133 @@
             <param name="Page"></param>
             <returns></returns>
         </member>
-        <member name="M:DataObjects_Framework.Base.ClsBase_List.Load(DataObjects_Framework.Objects.ClsKeys)">
+        <member name="M:DataObjects_Framework.Base.ClsBase_List.Load(DataObjects_Framework.Objects.ClsKeys,DataObjects_Framework.Base.ClsBase)">
             <summary>
-            (Overrided) Loads the List with the supplied Key
+            Loads the List with the supplied Key.
             </summary>
             <param name="Keys">
-            Key object to use
+            Key object to use, if null, it implies to create a new data object.
+            </param>
+            <param name="Obj_Parent">
+            The Parent Data Object.
+            </param>
+        </member>
+        <member name="M:DataObjects_Framework.Base.ClsBase_List.Load(DataObjects_Framework.DataAccess.Interface_DataAccess,DataObjects_Framework.Objects.ClsKeys,DataObjects_Framework.Base.ClsBase)">
+            <summary>
+            Loads the List with the supplied Key.
+            </summary>
+            <param name="Da">
+            An open DataAccess Object to be used.
+            </param>
+            <param name="Keys">
+            Key object to use, if null, it implies to create a new data object.
+            </param>
+            <param name="Obj_Parent">
+            The Parent Data Object.
+            </param>
+        </member>
+        <member name="M:DataObjects_Framework.Base.ClsBase_List.Load(System.Data.DataRow)">
+            <summary>
+            Loads the Data Object from the key of the specified data row.
+            </summary>
+            <param name="Dr">
+            Source data row to use
             </param>
         </member>
         <member name="M:DataObjects_Framework.Base.ClsBase_List.Load(System.String)">
             <summary>
-            (Overridable) Loads the List with the supplied condition string
+            Loads the List with the supplied condition string
             </summary>
             <param name="Condition">
             String condition to use
             </param>
         </member>
+        <member name="M:DataObjects_Framework.Base.ClsBase_List.Load(DataObjects_Framework.DataAccess.Interface_DataAccess,System.String)">
+            <summary>
+            Loads the List with the supplied condition string.
+            </summary>
+            <param name="Da">
+            An open DataAccess Object to be used.
+            </param>
+            <param name="Condition">
+            String condition to use.
+            </param>
+        </member>
         <member name="M:DataObjects_Framework.Base.ClsBase_List.Load(DataObjects_Framework.Objects.ClsQueryCondition)">
             <summary>
-            (Overridable) Loads the List with the supplied QueryCondition object
+            Loads the List with the supplied QueryCondition object
             </summary>
             <param name="Condition">
             QueryCondition object to use
             </param>
         </member>
-        <member name="M:DataObjects_Framework.Base.ClsBase_List.Save(DataObjects_Framework.DataAccess.Interface_DataAccess)">
+        <member name="M:DataObjects_Framework.Base.ClsBase_List.Load(DataObjects_Framework.DataAccess.Interface_DataAccess,DataObjects_Framework.Objects.ClsQueryCondition)">
             <summary>
-            (Overrided) Saves changes to the List
+            Loads the List with the supplied QueryCondition object
             </summary>
             <param name="Da">
-            Optional, an open Data_Access Objects that is reused from the calling method
+            An open DataAccess Object to be used.
+            </param>
+            <param name="Condition">
+            QueryCondition object to use.
+            </param>
+        </member>
+        <member name="M:DataObjects_Framework.Base.ClsBase_List.Save(DataObjects_Framework.DataAccess.Interface_DataAccess)">
+            <summary>
+            Saves changes to the List
+            </summary>
+            <param name="Da">
+            An open Data_Access Objects that is reused from the calling method
+            </param>
+            <returns></returns>
+        </member>
+        <member name="M:DataObjects_Framework.Base.ClsBase_List.Save_Add">
+            <summary>
+            Overide this method to add additional methods before saving.
+            </summary>
+        </member>
+        <member name="M:DataObjects_Framework.Base.ClsBase_List.Add_Item">
+            <summary>
+            Adds a new data row to the collection.
+            </summary>
+        </member>
+        <member name="M:DataObjects_Framework.Base.ClsBase_List.Delete_Item(System.Int64)">
+            <summary>
+            Removes the data row and its corresponding List_Obj objects
+            </summary>
+            <param name="TmpKey">
+            The key of the data row to be removed
+            </param>
+        </member>
+        <member name="M:DataObjects_Framework.Base.ClsBase_List.Refresh_Desc(System.String,System.Collections.Generic.List{DataObjects_Framework.Base.ClsBase_List.Str_Desc})">
+            <summary>
+            Synchronizes data from the ListObject to the parent data row.
+            </summary>
+            <param name="Name">
+            The name of the List Object to refresh.
+            </param>
+            <param name="List_Desc">
+            Field definition of the parent and child fields to synchronize.
+            </param>
+        </member>
+        <member name="M:DataObjects_Framework.Base.ClsBase_List.pDt_ListObject_Get(System.String)">
+            <summary>
+            Gets the data table of the List Object.
+            </summary>
+            <param name="Name">
+            The name of the List Object to get.
+            </param>
+            <returns></returns>
+        </member>
+        <member name="M:DataObjects_Framework.Base.ClsBase_List.pObj_ListObject_Get(System.String,System.Int64)">
+            <summary>
+            Gets the data object of the List Object with the specified TmpKey.
+            </summary>
+            <param name="Name">
+            The name of the List Object to get.
+            </param>
+            <param name="TmpKey">
+            The TmpKey of the data object within the List Object.
             </param>
             <returns></returns>
         </member>
@@ -1034,7 +1281,7 @@
             The SQL Server implementation of Interface_DataAccess
             </summary>
         </member>
-        <member name="M:DataObjects_Framework.DataAccess.ClsDataAccess_SqlServer.GetQuery(DataObjects_Framework.Connection.Interface_Connection,System.String,System.String,System.String,System.String)">
+        <member name="M:DataObjects_Framework.DataAccess.ClsDataAccess_SqlServer.GetQuery(DataObjects_Framework.Connection.Interface_Connection,System.String,System.String,System.String,System.String,System.Int64,System.Int32)">
             <summary>
             Fetches a result set from a data source object
             </summary>
@@ -1053,9 +1300,17 @@
             <param name="Sort">
             Sort expression to use to sort the result set (SQL Order By valid syntax)
             </param>
+            <param name="Top">
+            Limits the number of returned rows in the result set,
+            used in pagination
+            </param>
+            <param name="Page">
+            Selects a section based on the Page and Top values in the result set,
+            used in pagination
+            </param>
             <returns></returns>
         </member>
-        <member name="M:DataObjects_Framework.DataAccess.ClsDataAccess_SqlServer.GetQuery(System.String,System.String,System.String,System.String)">
+        <member name="M:DataObjects_Framework.DataAccess.ClsDataAccess_SqlServer.GetQuery(System.String,System.String,System.String,System.String,System.Int64,System.Int32)">
             <summary>
             Fetches a result set from a data source object
             </summary>
@@ -1070,6 +1325,14 @@
             </param>
             <param name="Sort">
             Sort expression to use to sort the result set (SQL Order By valid syntax)
+            </param>
+            <param name="Top">
+            Limits the number of returned rows in the result set,
+            used in pagination
+            </param>
+            <param name="Page">
+            Selects a section based on the Page and Top values in the result set,
+            used in pagination
             </param>
             <returns></returns>
         </member>
@@ -1130,8 +1393,16 @@
         </member>
         <member name="M:DataObjects_Framework.DataAccess.ClsDataAccess_SqlServer.Connect">
             <summary>
-            Connects to the defined datasource
+            Connects to the datasource defined in Do_Globals.gSettings.Datasource
             </summary>
+        </member>
+        <member name="M:DataObjects_Framework.DataAccess.ClsDataAccess_SqlServer.Connect(System.String)">
+            <summary>
+            Connects to the specified datasource
+            </summary>
+            <param name="ConnectionString">
+            The specified connection definition to the datasource
+            </param>
         </member>
         <member name="M:DataObjects_Framework.DataAccess.ClsDataAccess_SqlServer.Close">
             <summary>
@@ -1219,19 +1490,6 @@
             </param>
             <param name="Condition">
             ClsQueryCondition Object to be used in fetching the data
-            </param>
-            <returns></returns>
-        </member>
-        <member name="M:DataObjects_Framework.DataAccess.ClsDataAccess_SqlServer.List_Empty(DataObjects_Framework.Connection.Interface_Connection,System.String)">
-            <summary>
-            Returns a Empy List based on the supplied source data object Name
-            Used for getting the definition of the data object
-            </summary>
-            <param name="Connection">
-            An open connection object
-            </param>
-            <param name="ObjectName">
-            The source data object name
             </param>
             <returns></returns>
         </member>
@@ -1659,6 +1917,154 @@
             </param>
             <returns></returns>
         </member>
+        <member name="M:DataObjects_Framework.Common.Do_Methods.GenerateChr(System.Int32)">
+            <summary>
+            Generates a character from the inputted number, such as 1:A, 26:Z, 27:A1, etc.
+            </summary>
+            <param name="Input">
+            The number to be converted
+            </param>
+            <returns></returns>
+        </member>
+        <member name="M:DataObjects_Framework.Common.Do_Methods.AddDataRow(System.Data.DataTable@,System.Collections.Generic.List{DataObjects_Framework.Common.Do_Constants.Str_Parameters})">
+            <summary>
+            Adds a new row to the specified data table with the supplied Str_Parameter List.
+            </summary>
+            <param name="Dt">
+            The target data table
+            </param>
+            <param name="Sp">
+            Contains the data to add
+            </param>
+        </member>
+        <member name="M:DataObjects_Framework.Common.Do_Methods.AddDataRow(System.Data.DataTable@,System.String[],System.Object[])">
+            <summary>
+            Adds a new row to the specified data table with the supplied fields and values.
+            </summary>
+            <param name="Dt">
+            The target data table
+            </param>
+            <param name="Fields">
+            String array for Fields
+            </param>
+            <param name="Values">
+            Object array for Values, must contain the same number of elements as Fields
+            </param>
+        </member>
+        <member name="M:DataObjects_Framework.Common.Do_Methods.ConvertDataTo2DimArray(System.Data.DataTable,System.String[],System.Int32,System.Int32)">
+            <summary>
+            Converts a data table to a 2 dimensional array
+            </summary>
+            <param name="Dt">
+            The source data table
+            </param>
+            <param name="Fields">
+            The field list to use, if null all of the fields will be used
+            </param>
+            <param name="RowStart">
+            Conversion will start at the specified index
+            </param>
+            <param name="RowEnd">
+            Conversion will end at the specified index
+            </param>
+            <returns>
+            Returns a 2 dimensional array of objects
+            </returns>
+        </member>
+        <member name="M:DataObjects_Framework.Common.Do_Methods.ConvertCaps(System.Data.DataRow,System.Boolean)">
+            <summary>
+            Converts the capitalization of all the fields the specified datarow to the specified case if it is a string data type.
+            </summary>
+            <param name="Dr">
+            The target data row.
+            </param>
+            <param name="IsUpperCase">
+            If true, converts to Upper Case, else to Lower Case.
+            </param>
+        </member>
+        <member name="M:DataObjects_Framework.Common.Do_Methods.ConvertCaps(System.Data.DataTable,System.Boolean)">
+            <summary>
+            Converts the capitalization of all the fields of all the data rows of the specified data table to the specified case if it is a string data type.
+            </summary>
+            <param name="Dt">
+            The target data table.
+            </param>
+            <param name="IsUpperCase">
+            If true, converts to Upper Case, else to Lower Case.
+            </param>
+        </member>
+        <member name="M:DataObjects_Framework.Common.Do_Methods.Convert_Double(System.Object,System.Double)">
+            <summary>
+            Converts an object to a double data type without exceptions.
+            </summary>
+            <param name="Value">
+            The value to be converted.
+            </param>
+            <param name="DefaultValue">
+            The value to be used if the conversion fails.
+            </param>
+            <returns></returns>
+        </member>
+        <member name="M:DataObjects_Framework.Common.Do_Methods.Convert_Int32(System.Object,System.Int32)">
+            <summary>
+            Converts an object to a Int32 data type without exceptions.
+            </summary>
+            <param name="Value">
+            The value to be converted.
+            </param>
+            <param name="DefaultValue">
+            The value to be used if the conversion fails.
+            </param>
+            <returns></returns>
+        </member>
+        <member name="M:DataObjects_Framework.Common.Do_Methods.Convert_Int64(System.Object,System.Int64)">
+            <summary>
+            Converts an object to a Int64 data type without exceptions.
+            </summary>
+            <param name="Value">
+            The value to be converted.
+            </param>
+            <param name="DefaultValue">
+            The value to be used if the conversion fails.
+            </param>
+            <returns></returns>
+        </member>
+        <member name="M:DataObjects_Framework.Common.Do_Methods.Convert_DateTime(System.Object,System.Nullable{System.DateTime})">
+            <summary>
+            Converts an object to a Nullable Date Time data type without exceptions.
+            </summary>
+            <param name="Value">
+            The value to be converted.
+            </param>
+            <param name="DefaultValue">
+            The value to be used if the conversion fails.
+            </param>
+            <returns></returns>
+        </member>
+        <member name="M:DataObjects_Framework.Common.Do_Methods.Convert_String(System.Object,System.String)">
+            <summary>
+            Converts an object to a string data type without exceptions.
+            </summary>
+            <param name="Value">
+            The value to be converted.
+            </param>
+            <param name="DefaultValue">
+            The value to be used if the conversion fails.
+            </param>
+            <returns></returns>
+        </member>
+        <member name="M:DataObjects_Framework.Common.Do_Methods.Convert_Boolean(System.Object,System.Boolean)">
+            <summary>
+            Converts an object to a boolean data type without exceptions.
+            </summary>
+            <param name="Value">
+            The value to be converted.
+            </param>
+            <param name="DefaultValue">
+            The value to be used if the conversion fails.
+            </param>
+            <returns></returns>
+        </member>
         <member name="T:DataObjects_Framework.Common.Do_Constants">
             <summary>
             Constants and structs used in the framework are defined here.
@@ -1669,10 +2075,24 @@
             Struct Str_Parameters, used in various query execution methods.
             </summary>
         </member>
+        <member name="M:DataObjects_Framework.Common.Do_Constants.Str_Parameters.#ctor(System.String,System.Object)">
+            <summary>
+            Constructor for Str_Parameters
+            </summary>
+            <param name="pName"></param>
+            <param name="pValue"></param>
+        </member>
         <member name="T:DataObjects_Framework.Common.Do_Constants.Str_Sort">
             <summary>
             Struct Str_Sort
             </summary>
+        </member>
+        <member name="M:DataObjects_Framework.Common.Do_Constants.Str_Sort.#ctor(System.String,System.Boolean)">
+            <summary>
+            Constructor for Str_Sort
+            </summary>
+            <param name="pName"></param>
+            <param name="pIsDesc"></param>
         </member>
         <member name="T:DataObjects_Framework.Common.Do_Constants.Str_ForeignKeyRelation">
             <summary>
@@ -1688,6 +2108,13 @@
             <summary>
             The matching foreign key for the target table detail
             </summary>
+        </member>
+        <member name="M:DataObjects_Framework.Common.Do_Constants.Str_ForeignKeyRelation.#ctor(System.String,System.String)">
+            <summary>
+            Constructor for Str_ForeignKeyRelation
+            </summary>
+            <param name="Parent_Key"></param>
+            <param name="Child_Key"></param>
         </member>
         <member name="T:DataObjects_Framework.Connection.Interface_Connection">
             <summary>
@@ -1857,6 +2284,16 @@
             <summary>
             Sets if the framework will use the soft delete feature, 
             will require the "IsDeleted As Bit" field on tables to use this feature.
+            </summary>
+        </member>
+        <member name="P:DataObjects_Framework.Common.Global_Settings.pCollection">
+            <summary>
+            Generic Dictionary of settings, fill it up as needed.
+            </summary>
+        </member>
+        <member name="T:DataObjects_Framework.Common.Do_Methods_Query">
+            <summary>
+            Common Querying methods used by the framework are defined here.
             </summary>
         </member>
     </members>
